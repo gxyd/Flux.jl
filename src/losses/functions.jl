@@ -82,7 +82,10 @@ calculated as
 
 See also: [`Flux.Losses.crossentropy`](@ref), [`Flux.Losses.binarycrossentropy`](@ref), [`Flux.Losses.logitbinarycrossentropy`](@ref)
 """
-function logitcrossentropy(ŷ, y; dims=1, agg=mean)
+function logitcrossentropy(ŷ, y; dims=1, agg=mean, label_smoothing=0.)
+    ((label_smoothing < 0. || label_smoothing > 1.0) &&
+      throw(error("label_smoothing should be between 0 and 1")))
+    y = y .* (1 - label_smoothing) .+ 0.5 * label_smoothing
     agg(.-sum(y .* logsoftmax(ŷ; dims=dims); dims=dims))
 end
 
@@ -116,7 +119,10 @@ Mathematically equivalent to
 See also: [`Flux.Losses.crossentropy`](@ref), [`Flux.Losses.logitcrossentropy`](@ref), [`Flux.Losses.binarycrossentropy`](@ref)
 ```
 """
-function logitbinarycrossentropy(ŷ, y; agg=mean)
+function logitbinarycrossentropy(ŷ, y; agg=mean, label_smoothing=0.)
+    ((label_smoothing < 0. || label_smoothing > 1.0) &&
+      throw(error("label_smoothing should be between 0 and 1")))
+    y = y .* (1 - label_smoothing) .+ 0.5 * label_smoothing
     agg(@.((1-y)*ŷ - logσ(ŷ)))
 end
 # Re-definition to fix interaction with CuArrays.
